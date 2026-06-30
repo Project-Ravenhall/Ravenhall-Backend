@@ -1,0 +1,15 @@
+spring.application.name=Ravenhall-Backend
+
+# Tell Spring where Postgres is running
+spring.datasource.url=jdbc:postgresql://localhost:5432/your_database
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+
+# Tell Hibernate to automatically create your tables based on your Entities
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+server.port=8080
+
+directory.books=/home/hero/studies/projects/Ravenhall/Ravenhall-Backend/BooksDirectoryExample
+
