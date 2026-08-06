@@ -1,15 +1,18 @@
 package dev.ravenhall.book.application.ports.in.commands;
 
 import dev.ravenhall.book.domain.enums.FileFormat;
+import lombok.Builder;
 
-public record UploadBookCommand (
-        String title,
-        String author,
+import java.util.List;
+
+@Builder(toBuilder = true)
+public record UploadBookCommand(
+        String localTitle,
+        List<String> localAuthors,
+        String series,
         FileFormat fileFormat,
         String filePath,
         String fileChecksum,
         int pageCount,
         long fileSize
-) {
-
-}
+) {}

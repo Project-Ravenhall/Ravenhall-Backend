@@ -1,12 +1,17 @@
 package dev.ravenhall.book.adapters.in.web.dto;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record RetrieveBookResponseDTO(
         UUID id,
-        String title,
-        String author,
+        String localTitle,
+        List<String> localAuthors,
+        String apiTitle,
+        List<String> apiAuthors,
+        String synopsis,
+        String coverPath,
         OffsetDateTime addedAt
 ) {
 

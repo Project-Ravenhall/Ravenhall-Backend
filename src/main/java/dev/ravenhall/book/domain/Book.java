@@ -1,6 +1,8 @@
 package dev.ravenhall.book.domain;
 
+import dev.ravenhall.book.domain.enums.MetadataStatus;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
@@ -9,30 +11,46 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
+@Setter
 public class Book {
 
     private final UUID id;
-    private final String title;
+    private final String localTitle;
+    private String synopsis;
     private final OffsetDateTime addedAt;
-    private final String author;
+    private List<String> localAuthors;
+    private String coverPath;
     private final UUID seriesId;
+    private final Long version;
+    private MetadataStatus metadataStatus;
+    private String apiTitle;
+    private List<String> apiAuthors;
     private final List<BookAsset> assets = new ArrayList<>();
 
-    // 1. THE CREATION CONSTRUCTOR (Used by the Scanner/Service)
-    public Book(UUID id, String title, Clock clock, String author, UUID seriesId) {
-        this.id = (id != null) ? id : UUID.randomUUID();
-        this.title = title.trim();
+    // this constructor is used for creation only, therefore the id is randomly set
+    public Book(String localTitle, Clock clock, List<String> localAuthors, UUID seriesId, MetadataStatus metadataStatus) {
+        this.id = UUID.randomUUID();
+        this.localTitle = localTitle.trim();
         this.addedAt = OffsetDateTime.now(clock);
-        this.author = author.trim();
+        this.localAuthors = localAuthors;
         this.seriesId = seriesId;
+        this.version = null;
+        this.metadataStatus = metadataStatus;
     }
 
-    public Book(UUID id, String title, OffsetDateTime addedAt, String author, UUID seriesId) {
+    // this is for reconstitution only, like loading from DB
+    public Book(UUID id, String localTitle, Long version, List<String> localAuthors, String synopsis, String coverPath, UUID seriesId, OffsetDateTime addedAt, String apiTitle, List<String> apiAuthors, MetadataStatus metadataStatus) {
         this.id = id;
-        this.title = title;
+        this.localTitle = localTitle;
+        this.version = version;
         this.addedAt = addedAt;
-        this.author = author;
+        this.localAuthors = localAuthors;
+        this.synopsis = synopsis;
+        this.coverPath = coverPath;
         this.seriesId = seriesId;
+        this.apiTitle = apiTitle;
+        this.apiAuthors = apiAuthors;
+        this.metadataStatus = metadataStatus;
     }
 
     public void addAsset(BookAsset asset) {

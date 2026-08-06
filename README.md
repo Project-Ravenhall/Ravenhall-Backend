@@ -133,7 +133,7 @@ Ensure you have the following installed on your machine:
 ### Backend Codebase
 *   **Main Application Root:** [RavenhallApplication.java](../Ravenhall-Backend/src/main/java/dev/ravenhall/RavenhallApplication.java)
 *   **REST Endpoint Adapter:** [BookApiController.java](../Ravenhall-Backend/src/main/java/dev/ravenhall/book/adapters/in/web/BookApiController.java)
-*   **Automatic PDF Watch Ingestor:** [BookFileIngestionAdapter.java](../Ravenhall-Backend/src/main/java/dev/ravenhall/book/adapters/in/file/filewatcher/BookFileIngestionAdapter.java)
+*   **Automatic PDF Watch Ingestor:** [BookFileIngestionAdapter.java](src/main/java/dev/ravenhall/book/adapters/in/scanner/file/filewatcher/BookFileIngestionAdapter.java)
 *   **Core Domain Model:** [Book.java](../Ravenhall-Backend/src/main/java/dev/ravenhall/book/domain/Book.java)
 
 ### Frontend Codebase

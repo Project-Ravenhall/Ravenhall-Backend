@@ -2,10 +2,12 @@ package dev.ravenhall.book.adapters.out.persistence.jpa.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -21,10 +23,11 @@ public class BookSeriesJpaEntity {
     private UUID id;
 
     @Column(nullable = false, length = 500)
-    private String title;
+    private String name;
 
-    @Column(length = 500)
-    private String author;
+    @Column(name = "authors")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private List<String> authors;
 
     @Column(columnDefinition = "TEXT")
     private String synopsis;
@@ -37,6 +40,7 @@ public class BookSeriesJpaEntity {
 
     // One Series has Many Books. Cascade applies if you delete a series.
     @OneToMany(mappedBy = "series", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<BookJpaEntity> books = new ArrayList<>();
 
     @Override

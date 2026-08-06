@@ -1,0 +1,11 @@
+query BooksWithAuthor($title: String!, $authors: String!) {
+    search(query: $title, query_type: "books", filter_by: $authors) {
+        results
+    }
+}
+
+query BooksNoAuthor($title: String!) {
+    search(query: $title, query_type: "books") {
+        results
+    }
+}

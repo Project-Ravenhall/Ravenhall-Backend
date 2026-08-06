@@ -1,15 +1,35 @@
 spring.application.name=Ravenhall-Backend
 
 # Tell Spring where Postgres is running
-spring.datasource.url=jdbc:postgresql://localhost:5432/your_database
-spring.datasource.username=your_username
-spring.datasource.password=your_password
+spring.datasource.url=jdbc:postgresql://example:5445/ravenhall
+spring.datasource.username=ravenhall_user
+spring.datasource.password=ABookIsFullOfWondersAndMysteries
 
 # Tell Hibernate to automatically create your tables based on your Entities
-spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.hibernate.ddl-auto=create
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
-server.port=8080
+# Show the SQL in your console so you can see it working
+spring.jpa.show-sql=true
+
+server.port=8081
+
+# Format them nicely
+spring.jpa.properties.hibernate.format_sql=true
+
+# Log the SQL
+logging.level.org.hibernate.SQL=DEBUG
+
+# Log the values bound to ? placeholders (Hibernate 6 / Spring Boot 3)
+logging.level.org.hibernate.orm.jdbc.bind=TRACE
 
 directory.books=/home/hero/studies/projects/Ravenhall/Ravenhall-Backend/BooksDirectoryExample
 
+metadata.google.apikey=
+metadata.hardcover.apikey=
+
+metadata.storage.path=./
+metadata.storage.covers-dir=metadata/images/book-covers
+
+# ISSUE: the .env is not being read for some reason
+jwt.secret.key=${JWT_SECRET:12345}
