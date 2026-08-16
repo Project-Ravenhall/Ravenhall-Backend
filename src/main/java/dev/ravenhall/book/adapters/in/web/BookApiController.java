@@ -4,6 +4,8 @@ import dev.ravenhall.book.adapters.in.web.dto.RetrieveBookResponseDTO;
 import dev.ravenhall.book.adapters.in.web.mapper.BookRetrievalMapper;
 import dev.ravenhall.book.application.ports.in.ManageBookPort;
 import dev.ravenhall.book.domain.Book;
+import dev.ravenhall.book.domain.BookAsset;
+import dev.ravenhall.book.domain.enums.FileFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -28,8 +30,8 @@ public class BookApiController {
     private final BookRetrievalMapper bookRetrievalMapper;
 
 
-    @GetMapping("/{id}")
-    public RetrieveBookResponseDTO retrieveBook(@PathVariable("id") UUID id) {
+    @GetMapping("/{bookId}")
+    public RetrieveBookResponseDTO retrieveBook(@PathVariable("bookId") UUID id) {
         Book bookDomain = manageBookPort.retrieveBook(id);
         return bookRetrievalMapper.domainToDto(bookDomain);
     }
@@ -45,8 +47,8 @@ public class BookApiController {
     }
 
 
-    @GetMapping("/{id}/cover")
-    public ResponseEntity<Resource> retrieveBookCover(@PathVariable("id") UUID id) {
+    @GetMapping("/{bookId}/cover")
+    public ResponseEntity<Resource> retrieveBookCover(@PathVariable("bookId") UUID id) {
         try {
             Book book = manageBookPort.retrieveBook(id);
             if (book == null || book.getCoverPath() == null) {
@@ -64,4 +66,34 @@ public class BookApiController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/assets/{assetId}")
+    public ResponseEntity<Resource> retrieveBookAsset(@PathVariable("assetId") UUID id) {
+        try {
+            BookAsset asset = manageBookPort.retrieveAsset(id);
+            if(asset == null || asset.getFilepath() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Path assetPath = Paths.get(asset.getFilepath());
+
+            // spring does resource.getInputStream() behind the scenes
+            // which is how it is able to get the actual bytes
+            Resource resource = new UrlResource(assetPath.toUri());
+
+            // there is no MediaType.APPLICATION_EPUB we have to set it the manual way
+            // which is also why its APPLICATION_PDF_VALUE and not APPLICATION_PDF
+            String mimeType = asset.getFileFormat() == FileFormat.EPUB
+                    ? "application/epub+zip"
+                    : MediaType.APPLICATION_PDF_VALUE;
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(mimeType))
+                    .body(resource);
+
+        } catch (MalformedURLException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

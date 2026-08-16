@@ -47,6 +47,13 @@ public class BookJpaEntity implements Persistable<UUID> {
     @JdbcTypeCode(SqlTypes.ARRAY)
     private List<String> apiAuthors;
 
+    @Column(name = "api_release_year")
+    private Integer apiReleaseYear;
+
+    @Column(name = "api_genres")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private List<String> apiGenres;
+
     @Column(columnDefinition = "TEXT")
     private String synopsis;
 

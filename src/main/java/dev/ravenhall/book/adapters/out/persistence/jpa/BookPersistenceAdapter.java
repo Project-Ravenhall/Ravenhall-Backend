@@ -24,6 +24,7 @@ import java.util.UUID;
 public class BookPersistenceAdapter implements ManageBookPort {
 
     private final BookRepository bookRepository;
+    private final dev.ravenhall.book.adapters.out.persistence.jpa.repository.BookAssetRepository bookAssetRepository;
     private final EntityManager entityManager;
 
     @Override
@@ -31,8 +32,8 @@ public class BookPersistenceAdapter implements ManageBookPort {
 
         // I used ON CONFLICT ON CONSTRAINT so we don't have to duplicate the lower() syntax here.
         String upsertSql = """
-            INSERT INTO books (id, local_title, local_authors, series_id, added_at, metadata_status, api_title, api_authors, synopsis, cover_path)
-            VALUES (:id, :localTitle, cast(:localAuthors as text[]), :seriesId, :addedAt, :metadataStatus, :apiTitle, cast(:apiAuthors as text[]), :synopsis, :coverPath)
+            INSERT INTO books (id, local_title, local_authors, series_id, added_at, metadata_status, api_title, api_authors, api_release_year, api_genres, synopsis, cover_path)
+            VALUES (:id, :localTitle, cast(:localAuthors as text[]), :seriesId, :addedAt, :metadataStatus, :apiTitle, cast(:apiAuthors as text[]), :apiReleaseYear, cast(:apiGenres as text[]), :synopsis, :coverPath)
             ON CONFLICT (lower(local_title), lower((local_authors)[1]), series_id)
             DO UPDATE SET local_title = EXCLUDED.local_title
             RETURNING id
@@ -47,10 +48,12 @@ public class BookPersistenceAdapter implements ManageBookPort {
                 .setParameter("metadataStatus", book.getMetadataStatus() != null ? book.getMetadataStatus().name() : null)
                 .setParameter("apiTitle", book.getApiTitle())
                 .setParameter("apiAuthors", book.getApiAuthors() != null ? book.getApiAuthors().toArray(new String[0]) : null)
+                .setParameter("apiReleaseYear", book.getApiReleaseYear())
+                .setParameter("apiGenres", book.getApiGenres() != null ? book.getApiGenres().toArray(new String[0]) : null)
                 .setParameter("synopsis", book.getSynopsis())
                 .setParameter("coverPath", book.getCoverPath());
 
-        UUID resolvedBookId = (UUID) query.getSingleResult();
+        UUID resolvedBookId = (UUID) query.getSingleResult(); // it returns an object so we cast to UUID
 
         for (BookAsset asset : book.getAssets()) {
             entityManager.createNativeQuery("""
@@ -107,7 +110,9 @@ public class BookPersistenceAdapter implements ManageBookPort {
                 entity.getAddedAt(),
                 entity.getApiTitle(),
                 entity.getApiAuthors(),
-                entity.getMetadataStatus()
+                entity.getMetadataStatus(),
+                entity.getApiReleaseYear(),
+                entity.getApiGenres()
         );
 
         for (BookAssetJpaEntity assetEntity : entity.getAssets()) {
@@ -143,7 +148,9 @@ public class BookPersistenceAdapter implements ManageBookPort {
                     entity.getAddedAt(),
                     entity.getApiTitle(),
                     entity.getApiAuthors(),
-                    entity.getMetadataStatus()
+                    entity.getMetadataStatus(),
+                    entity.getApiReleaseYear(),
+                    entity.getApiGenres()
             );
             for (BookAssetJpaEntity assetEntity : entity.getAssets()) {
                 book.addAsset(new BookAsset(
@@ -167,6 +174,8 @@ public class BookPersistenceAdapter implements ManageBookPort {
                     book.getId(),
                     book.getApiTitle(),
                     book.getApiAuthors(),
+                    book.getApiReleaseYear(),
+                    book.getApiGenres(),
                     book.getSynopsis(),
                     book.getCoverPath(),
                     book.getMetadataStatus()
@@ -192,11 +201,29 @@ public class BookPersistenceAdapter implements ManageBookPort {
                     entity.getAddedAt(),
                     entity.getApiTitle(),
                     entity.getApiAuthors(),
-                    entity.getMetadataStatus()
+                    entity.getMetadataStatus(),
+                    entity.getApiReleaseYear(),
+                    entity.getApiGenres()
             );
 
             books.add(book);
         }
         return books;
+    }
+
+    @Override
+    public BookAsset retrieveAsset(UUID assetId) {
+        BookAssetJpaEntity assetEntity = bookAssetRepository.findById(assetId).orElse(null);
+        if (assetEntity == null) {
+            return null;
+        }
+        return new BookAsset(
+                assetEntity.getId(),
+                FileFormat.valueOf(assetEntity.getFileFormat()),
+                assetEntity.getFilePath(),
+                assetEntity.getPageCount() != null ? assetEntity.getPageCount() : 0,
+                assetEntity.getFileChecksum(),
+                assetEntity.getFileSize() != null ? assetEntity.getFileSize() : 1L
+        );
     }
 }

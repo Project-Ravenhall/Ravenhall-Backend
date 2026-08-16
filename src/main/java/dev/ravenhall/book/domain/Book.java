@@ -25,6 +25,8 @@ public class Book {
     private MetadataStatus metadataStatus;
     private String apiTitle;
     private List<String> apiAuthors;
+    private Integer apiReleaseYear;
+    private List<String> apiGenres;
     private final List<BookAsset> assets = new ArrayList<>();
 
     // this constructor is used for creation only, therefore the id is randomly set
@@ -39,7 +41,7 @@ public class Book {
     }
 
     // this is for reconstitution only, like loading from DB
-    public Book(UUID id, String localTitle, Long version, List<String> localAuthors, String synopsis, String coverPath, UUID seriesId, OffsetDateTime addedAt, String apiTitle, List<String> apiAuthors, MetadataStatus metadataStatus) {
+    public Book(UUID id, String localTitle, Long version, List<String> localAuthors, String synopsis, String coverPath, UUID seriesId, OffsetDateTime addedAt, String apiTitle, List<String> apiAuthors, MetadataStatus metadataStatus, Integer apiReleaseYear, List<String> apiGenres) {
         this.id = id;
         this.localTitle = localTitle;
         this.version = version;
@@ -51,6 +53,8 @@ public class Book {
         this.apiTitle = apiTitle;
         this.apiAuthors = apiAuthors;
         this.metadataStatus = metadataStatus;
+        this.apiReleaseYear = apiReleaseYear;
+        this.apiGenres = apiGenres;
     }
 
     public void addAsset(BookAsset asset) {

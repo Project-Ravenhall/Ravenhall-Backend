@@ -62,7 +62,7 @@ public class BookPathParser implements ManageBookPaths {
                 .build();
 
             default -> {
-                log.warn("Invalid directory depth ({}). Path violates structure rules and will be skipped: {}", depth, relativePath);
+                log.info("Invalid directory depth ({}). Path violates structure rules and will be skipped: {}", depth, relativePath);
                 yield null;
             }
         };

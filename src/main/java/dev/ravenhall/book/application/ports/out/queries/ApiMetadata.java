@@ -6,6 +6,7 @@ public record ApiMetadata(
         String title,
         List<String> authors,
         String description,
-        String publishedDate,
-        String coverPath
+        Integer releaseYear,
+        String coverPath,
+        List<String> genres
 ) {}

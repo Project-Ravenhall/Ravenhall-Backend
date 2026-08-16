@@ -52,4 +52,10 @@ public class ManageBookService implements ManageBookPort {
     public List<Book> retrieveAllBooks() {
         return manageBookPort.retrieveAllBooks();
     }
+
+    @Override
+    @Transactional
+    public BookAsset retrieveAsset(UUID assetId) {
+        return manageBookPort.retrieveAsset(assetId);
+    }
 }

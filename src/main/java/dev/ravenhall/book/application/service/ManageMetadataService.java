@@ -68,6 +68,14 @@ public class ManageMetadataService implements ManageMetadataPort {
                 book.setSynopsis(metadata.description());
             }
 
+            if (metadata.genres() != null && !metadata.genres().isEmpty()) {
+                book.setApiGenres(metadata.genres());
+            }
+
+            if (metadata.releaseYear() != null) {
+                book.setApiReleaseYear(metadata.releaseYear());
+            }
+
             if (metadata.coverPath() != null && !metadata.coverPath().isBlank()) {
                 String downloadedCover = downloadCoverPort.downloadCover(metadata.coverPath());
                 book.setCoverPath(downloadedCover);

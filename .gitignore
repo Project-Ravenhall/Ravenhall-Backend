@@ -41,3 +41,5 @@ BooksDirectoryExample
 .env
 *.md
 !README.md
+
+diagrams
