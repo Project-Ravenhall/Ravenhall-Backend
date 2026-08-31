@@ -36,10 +36,9 @@ metadata
 
 src/main/resources/application.properties
 
-BooksDirectoryExample
-
+Books
 .env
 *.md
 !README.md
-
 diagrams
+app

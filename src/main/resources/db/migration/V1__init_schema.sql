@@ -1,5 +1,19 @@
 CREATE SEQUENCE IF NOT EXISTS revinfo_seq START WITH 1 INCREMENT BY 50;
 
+CREATE TABLE public.users
+(
+    id            UUID                     NOT NULL,
+    username      VARCHAR(255)             NOT NULL,
+    password_hash VARCHAR(255)             NOT NULL,
+    display_name  VARCHAR(255),
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL,
+    version       BIGINT,
+    CONSTRAINT pk_users PRIMARY KEY (id)
+);
+
+ALTER TABLE public.users
+    ADD CONSTRAINT uc_users_username UNIQUE (username);
+
 CREATE TABLE book_assets
 (
     id                UUID          NOT NULL,
@@ -13,6 +27,15 @@ CREATE TABLE book_assets
     audio_duration_ms BIGINT,
     ingested_at       TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_book_assets PRIMARY KEY (id)
+);
+
+CREATE TABLE book_progress
+(
+    user_id      UUID    NOT NULL,
+    asset_id     UUID    NOT NULL,
+    synced_page  INTEGER NOT NULL,
+    version      INTEGER NOT NULL,
+    CONSTRAINT pk_book_progress PRIMARY KEY (user_id, asset_id)
 );
 
 CREATE TABLE book_series
@@ -64,22 +87,15 @@ ALTER TABLE books
 ALTER TABLE book_assets
     ADD CONSTRAINT FK_BOOK_ASSETS_ON_BOOK FOREIGN KEY (book_id) REFERENCES books (id);
 
+ALTER TABLE book_progress
+    ADD CONSTRAINT FK_BOOK_PROGRESS_ON_ASSET FOREIGN KEY (asset_id) REFERENCES book_assets (id);
+
+ALTER TABLE book_progress
+    ADD CONSTRAINT FK_BOOK_PROGRESS_ON_USER FOREIGN KEY (user_id) REFERENCES public.users (id);
+
 ALTER TABLE revchanges
     ADD CONSTRAINT fk_revchanges_on_default_tracking_modified_entities_changelog FOREIGN KEY (rev) REFERENCES revinfo (rev);
 
-CREATE TABLE public.users
-(
-    id            UUID                     NOT NULL,
-    username      VARCHAR(255)             NOT NULL,
-    password_hash VARCHAR(255)             NOT NULL,
-    display_name  VARCHAR(255),
-    created_at    TIMESTAMP WITH TIME ZONE NOT NULL,
-    version       BIGINT,
-    CONSTRAINT pk_users PRIMARY KEY (id)
-);
-
-ALTER TABLE public.users
-    ADD CONSTRAINT uc_users_username UNIQUE (username);
 
 CREATE UNIQUE INDEX idx_books_local_unique
     ON books (lower(local_title), lower((local_authors)[1]), series_id)

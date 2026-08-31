@@ -1,6 +1,6 @@
 package dev.ravenhall.book.adapters.in.scanner.file.pdfbox;
 
-import dev.ravenhall.book.application.ports.out.queries.LocalMetadata;
+import dev.ravenhall.book.application.ports.out.data.metadata.local.LocalMetadataExtract;
 import dev.ravenhall.book.domain.enums.FileFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
@@ -20,7 +20,7 @@ import java.util.Optional;
 public class PdfExtractor {
 
 
-    public Optional<LocalMetadata> extract(File pdfFile) {
+    public Optional<LocalMetadataExtract> extract(File pdfFile) {
         try (PDDocument pdf = Loader.loadPDF(pdfFile)) {
 
             String filepath = pdfFile.getAbsolutePath();
@@ -28,7 +28,7 @@ public class PdfExtractor {
             int pageCount = pdf.getNumberOfPages();
             String checksum = sha256(pdfFile);
 
-            return Optional.of(new LocalMetadata(
+            return Optional.of(new LocalMetadataExtract(
                     FileFormat.PDF,
                     filepath,
                     checksum,

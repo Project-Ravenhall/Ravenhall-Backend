@@ -19,7 +19,7 @@ public interface BookRepository extends JpaRepository<BookJpaEntity, UUID> {
 
     @EntityGraph(attributePaths = {"assets"}) // pulls in assets with books instead of lazy loading them
     @NullMarked
-    Optional<BookJpaEntity> findById(UUID id);
+    Optional<BookJpaEntity> findById(UUID id, UUID userId);
 
     @EntityGraph(attributePaths = {"assets"})
     @Query("SELECT b FROM BookJpaEntity b")

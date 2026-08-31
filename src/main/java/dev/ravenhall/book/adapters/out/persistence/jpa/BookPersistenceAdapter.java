@@ -2,10 +2,14 @@ package dev.ravenhall.book.adapters.out.persistence.jpa;
 
 import dev.ravenhall.book.adapters.out.persistence.jpa.entities.BookAssetJpaEntity;
 import dev.ravenhall.book.adapters.out.persistence.jpa.entities.BookJpaEntity;
+import dev.ravenhall.book.adapters.out.persistence.jpa.entities.progress.BookProgressEntity;
+import dev.ravenhall.book.adapters.out.persistence.jpa.entities.progress.BookProgressId;
+import dev.ravenhall.book.adapters.out.persistence.jpa.repository.BookProgressRepository;
 import dev.ravenhall.book.adapters.out.persistence.jpa.repository.BookRepository;
 import dev.ravenhall.book.application.ports.out.ManageBookPort;
 import dev.ravenhall.book.domain.Book;
 import dev.ravenhall.book.domain.BookAsset;
+import dev.ravenhall.book.domain.Progress;
 import dev.ravenhall.book.domain.enums.FileFormat;
 import dev.ravenhall.book.domain.enums.MetadataStatus;
 import jakarta.persistence.EntityManager;
@@ -16,7 +20,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -25,6 +31,7 @@ public class BookPersistenceAdapter implements ManageBookPort {
 
     private final BookRepository bookRepository;
     private final dev.ravenhall.book.adapters.out.persistence.jpa.repository.BookAssetRepository bookAssetRepository;
+    private final BookProgressRepository bookProgressRepository;
     private final EntityManager entityManager;
 
     @Override
@@ -225,5 +232,50 @@ public class BookPersistenceAdapter implements ManageBookPort {
                 assetEntity.getFileChecksum(),
                 assetEntity.getFileSize() != null ? assetEntity.getFileSize() : 1L
         );
+    }
+
+    @Override
+    public Map<UUID, Integer> getProgressForAssets(UUID userId, List<UUID> assetIds) {
+        List<BookProgressEntity> entities = bookProgressRepository.findByUser_IdAndAsset_IdIn(userId, assetIds);
+        
+        return entities.stream()
+            .collect(Collectors.toMap(
+                entity -> entity.getAsset().getId(), 
+                BookProgressEntity::getSyncedPage,
+                (existing, replacement) -> existing
+            ));
+    }
+
+    @Override
+    public dev.ravenhall.book.domain.Progress getProgressForAsset(UUID userId, UUID assetId) {
+        return bookProgressRepository.findById(new BookProgressId(userId, assetId))
+                .map(entity -> new dev.ravenhall.book.domain.Progress(entity.getUser().getId(), entity.getAsset().getId(), entity.getSyncedPage(), entity.getVersion()))
+                .orElse(new dev.ravenhall.book.domain.Progress(userId, assetId, 0, 0));
+    }
+
+    @Override
+    public Progress updateProgress(Progress progress) {
+        // If the Optional has a number, it succeeded. Map it and return.
+        return bookProgressRepository.upsertProgress(
+                        progress.getUserId(),
+                        progress.getAssetId(),
+                        progress.getPage(),
+                        progress.getVersion()
+                ).map(newVersion -> new Progress(progress.getUserId(), progress.getAssetId(), progress.getPage(), newVersion))
+                .orElseGet(() -> {
+                    // The Optional was empty (silent drop). 
+                    // This means the frontend sent a stale version ticket, or the data might be wrong.
+                    log.warn("Optimistic locking prevented progress update for user {} on asset {}. Expected version: {}. The incoming data/version might be wrong. Fetching true DB state...", 
+                        progress.getUserId(), progress.getAssetId(), progress.getVersion());
+                        
+                    return bookProgressRepository.findById(new BookProgressId(progress.getUserId(), progress.getAssetId()))
+                            .map(entity -> new Progress(
+                                    entity.getUser().getId(),
+                                    entity.getAsset().getId(),
+                                    entity.getSyncedPage(),
+                                    entity.getVersion()
+                            ))
+                            .orElseThrow(() -> new IllegalStateException("Anomaly during silent drop"));
+                });
     }
 }

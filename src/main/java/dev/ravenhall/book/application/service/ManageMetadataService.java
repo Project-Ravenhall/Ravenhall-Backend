@@ -1,11 +1,11 @@
 package dev.ravenhall.book.application.service;
 
-import dev.ravenhall.book.application.ports.in.ManageMetadataPort;
+import dev.ravenhall.book.application.ports.in.ManageMetadataUseCase;
 import dev.ravenhall.book.application.ports.out.ManageBookPort;
+import dev.ravenhall.book.application.ports.out.data.metadata.api.ApiMetadataResponse;
+import dev.ravenhall.book.application.ports.out.data.metadata.api.ApiMetadataSearchRequest;
 import dev.ravenhall.book.application.ports.out.metadata.DownloadBookCoverPort;
 import dev.ravenhall.book.application.ports.out.metadata.FetchBookMetadataPort;
-import dev.ravenhall.book.application.ports.out.queries.ApiMetadata;
-import dev.ravenhall.book.application.ports.out.queries.SearchRequest;
 import dev.ravenhall.book.domain.Book;
 import dev.ravenhall.book.domain.enums.MetadataStatus;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class ManageMetadataService implements ManageMetadataPort {
+public class ManageMetadataService implements ManageMetadataUseCase {
 
     private final FetchBookMetadataPort metadataPort;
     private final DownloadBookCoverPort downloadCoverPort;
@@ -35,13 +35,13 @@ public class ManageMetadataService implements ManageMetadataPort {
         }
 
         // links each book to the exact request made for it
-        Map<Book, SearchRequest> bookToRequest = new HashMap<>();
+        Map<Book, ApiMetadataSearchRequest> bookToRequest = new HashMap<>();
         for (Book book : bookList) {
-            bookToRequest.put(book, new SearchRequest(book.getLocalTitle(), book.getLocalAuthors(), null));
+            bookToRequest.put(book, new ApiMetadataSearchRequest(book.getLocalTitle(), book.getLocalAuthors(), null));
         }
 
-        // Fetch metadata — adapter returns Map<SearchRequest, ApiMetadata>
-        Map<SearchRequest, ApiMetadata> requestToMetadata = metadataPort.fetchBookMetadata(
+        // Fetch metadata — adapter returns Map<ApiMetadataSearchRequest, ApiMetadataResponse>
+        Map<ApiMetadataSearchRequest, ApiMetadataResponse> requestToMetadata = metadataPort.fetchBookMetadata(
                 new ArrayList<>(bookToRequest.values())
         );
         if (requestToMetadata == null || requestToMetadata.isEmpty()) {
@@ -49,7 +49,7 @@ public class ManageMetadataService implements ManageMetadataPort {
         }
 
         for (Book book : bookList) {
-            ApiMetadata metadata = requestToMetadata.get(bookToRequest.get(book));
+            ApiMetadataResponse metadata = requestToMetadata.get(bookToRequest.get(book));
 
             if (metadata == null) {
                 book.setMetadataStatus(MetadataStatus.FAILED);

@@ -1,6 +1,6 @@
 package dev.ravenhall.book.adapters.in.scanner;
 
-import dev.ravenhall.book.application.ports.in.ManageBookPaths;
+import dev.ravenhall.book.application.ports.in.ManageBookPathsUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
@@ -25,7 +25,7 @@ public class BookDirectoryScanner {
     private String bookRootDirectoryString;
 
     private final List<String> fileFormats = List.of(".pdf", ".epub");
-    private final ManageBookPaths manageBookPaths;
+    private final ManageBookPathsUseCase manageBookPathsUseCase;
 
     @EventListener(ApplicationReadyEvent.class)
     public void runOnStartup() {
@@ -50,7 +50,7 @@ public class BookDirectoryScanner {
                     String fileName = file.getFileName().toString();
                     if (fileFormats.stream().anyMatch(fileName::endsWith)) {
                         Path relativePath = bookRootDirectory.relativize(file);
-                        manageBookPaths.parseBookPath(file, relativePath);
+                        manageBookPathsUseCase.parseBookPath(file, relativePath);
                     }
                     return FileVisitResult.CONTINUE;
                 }
@@ -82,7 +82,7 @@ public class BookDirectoryScanner {
                                         })
                                         .forEach(file -> {
                                             Path relativePath = bookRootDirectory.relativize(file);
-                                            manageBookPaths.parseBookPath(file, relativePath);
+                                            manageBookPathsUseCase.parseBookPath(file, relativePath);
                                         });
                                 return FileVisitResult.SKIP_SUBTREE;
                             }

@@ -1,4 +1,4 @@
-package dev.ravenhall.book.application.ports.in.commands;
+package dev.ravenhall.book.application.ports.in.data.book;
 
 import dev.ravenhall.book.domain.enums.FileFormat;
 import lombok.Builder;

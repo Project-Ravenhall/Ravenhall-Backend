@@ -10,9 +10,9 @@
     </parent>
     <groupId>dev</groupId>
     <artifactId>ravenhall-backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>Ravenhall-Backend</name>
-    <description>Ravenhall-Backend is the core of our Media Sync Library Management System whatever...</description>
+    <description>Ravenhall-Backend is the core of the Library Management System...</description>
     <url/>
     <licenses>
         <license/>
@@ -114,7 +114,7 @@
             </dependency>
             <dependency>
                 <groupId>me.paulschwarz</groupId>
-                <artifactId>spring-dotenv</artifactId>
+                <artifactId>springboot4-dotenv</artifactId>
                 <version>5.1.0</version>
             </dependency>
             <dependency>

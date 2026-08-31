@@ -1,22 +1,28 @@
 package dev.ravenhall.book.adapters.in.web;
 
+import dev.ravenhall.book.adapters.in.web.dto.ProgressDTO;
 import dev.ravenhall.book.adapters.in.web.dto.RetrieveBookResponseDTO;
 import dev.ravenhall.book.adapters.in.web.mapper.BookRetrievalMapper;
-import dev.ravenhall.book.application.ports.in.ManageBookPort;
+import dev.ravenhall.book.adapters.in.web.mapper.ProgressMapper;
+import dev.ravenhall.book.application.ports.in.ManageBookUseCase;
+import dev.ravenhall.book.application.ports.in.data.progress.ProgressUpdate;
 import dev.ravenhall.book.domain.Book;
 import dev.ravenhall.book.domain.BookAsset;
+import dev.ravenhall.book.domain.Progress;
 import dev.ravenhall.book.domain.enums.FileFormat;
+import dev.ravenhall.security.model.JwtPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,31 +32,31 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookApiController {
 
-    private final ManageBookPort manageBookPort;
+    private final ManageBookUseCase manageBookUseCase;
     private final BookRetrievalMapper bookRetrievalMapper;
+    private final ProgressMapper progressMapper;
 
 
     @GetMapping("/{bookId}")
-    public RetrieveBookResponseDTO retrieveBook(@PathVariable("bookId") UUID id) {
-        Book bookDomain = manageBookPort.retrieveBook(id);
+    public RetrieveBookResponseDTO retrieveBook(
+            @AuthenticationPrincipal JwtPrincipal principal, 
+            @PathVariable("bookId") UUID id) 
+    {
+        Book bookDomain = manageBookUseCase.retrieveBook(id, principal.userId());
         return bookRetrievalMapper.domainToDto(bookDomain);
     }
 
     @GetMapping("/allBooks")
     public List<RetrieveBookResponseDTO> retrieveAllBooks() {
-        List<Book> books = manageBookPort.retrieveAllBooks();
-        List<RetrieveBookResponseDTO> dtos = new ArrayList<>();
-        for(Book book : books) {
-            dtos.add(bookRetrievalMapper.domainToDto(book));
-        }
-        return dtos;
+        List<Book> books = manageBookUseCase.retrieveAllBooks();
+        return bookRetrievalMapper.domainListToDtoList(books);
     }
 
 
     @GetMapping("/{bookId}/cover")
     public ResponseEntity<Resource> retrieveBookCover(@PathVariable("bookId") UUID id) {
         try {
-            Book book = manageBookPort.retrieveBook(id);
+            Book book = manageBookUseCase.retrieveBook(id, null);
             if (book == null || book.getCoverPath() == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -70,7 +76,7 @@ public class BookApiController {
     @GetMapping("/assets/{assetId}")
     public ResponseEntity<Resource> retrieveBookAsset(@PathVariable("assetId") UUID id) {
         try {
-            BookAsset asset = manageBookPort.retrieveAsset(id);
+            BookAsset asset = manageBookUseCase.retrieveAsset(id);
             if(asset == null || asset.getFilepath() == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -96,4 +102,24 @@ public class BookApiController {
         }
     }
 
+    @PostMapping("/assets/{assetId}/progress")
+    public ResponseEntity<ProgressDTO> updateProgress(
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @PathVariable("assetId") UUID assetId,
+            @RequestBody ProgressDTO request) {
+        
+        ProgressUpdate update = new ProgressUpdate(principal.userId(), assetId, request.page(), request.version());
+        Progress progress = manageBookUseCase.updateProgress(update);
+        return ResponseEntity.ok(progressMapper.domainToDto(progress));
+    }
+
+    @GetMapping("/assets/{assetId}/progress")
+    @NullMarked
+    public ResponseEntity<ProgressDTO> getProgress(
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @PathVariable("assetId") UUID assetId) {
+
+        Progress progress = manageBookUseCase.getProgressForAsset(principal.userId(), assetId);
+        return ResponseEntity.ok(progressMapper.domainToDto(progress));
+    }
 }

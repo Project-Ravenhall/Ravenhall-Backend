@@ -23,6 +23,7 @@ public record RetrieveBookResponseDTO(
             String filepath,
             int pageCount,
             String checksum,
-            long fileSize
+            long fileSize,
+            int syncedPage
     ) {}
 }

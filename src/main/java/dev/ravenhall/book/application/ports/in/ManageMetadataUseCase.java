@@ -1,6 +1,6 @@
 package dev.ravenhall.book.application.ports.in;
 
-public interface ManageMetadataPort {
+public interface ManageMetadataUseCase {
 
     void enrichMetadata();
 

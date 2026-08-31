@@ -1,10 +1,10 @@
 package dev.ravenhall.book.application.service;
 
 import dev.ravenhall.book.adapters.in.scanner.file.pdfbox.PdfExtractor;
-import dev.ravenhall.book.application.ports.in.ManageBookPaths;
-import dev.ravenhall.book.application.ports.in.ManageBookPort;
-import dev.ravenhall.book.application.ports.in.commands.UploadBookCommand;
-import dev.ravenhall.book.application.ports.out.queries.LocalMetadata;
+import dev.ravenhall.book.application.ports.in.ManageBookPathsUseCase;
+import dev.ravenhall.book.application.ports.in.ManageBookUseCase;
+import dev.ravenhall.book.application.ports.in.data.book.UploadBookCommand;
+import dev.ravenhall.book.application.ports.out.data.metadata.local.LocalMetadataExtract;
 import dev.ravenhall.book.domain.models.TextNormalizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +18,10 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class BookPathParser implements ManageBookPaths {
+public class BookPathParserUseCase implements ManageBookPathsUseCase {
 
     private final PdfExtractor pdfExtractor;
-    private final ManageBookPort manageBookPort;
+    private final ManageBookUseCase manageBookUseCase;
 
     // there are 3 possibilities here, either the book is in root folder
     // or in an author folder, in that either in series folder or not series
@@ -29,7 +29,7 @@ public class BookPathParser implements ManageBookPaths {
     @Override
     public void parseBookPath(Path absolutePath, Path relativePath) {
 
-        Optional<LocalMetadata> metadata = pdfExtractor.extract(absolutePath.toFile());
+        Optional<LocalMetadataExtract> metadata = pdfExtractor.extract(absolutePath.toFile());
         if (metadata.isEmpty()) {
             log.error("Book Extracted Local Metadata is empty: {}", absolutePath);
             return;
@@ -68,7 +68,8 @@ public class BookPathParser implements ManageBookPaths {
         };
 
         if (command != null) {
-            manageBookPort.ingestBook(command);
+            log.info("Uploaded book: {}", command.localTitle());
+            manageBookUseCase.ingestBook(command);
         }
     }
 
