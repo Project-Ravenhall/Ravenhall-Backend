@@ -11,11 +11,12 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface BookRetrievalMapper {
 
+    @Mapping(target = "coverUrl", expression = "java(book.getCoverPath() != null ? \"/api/v1/books/\" + book.getId() + \"/cover\" : null)")
     RetrieveBookResponseDTO domainToDto(Book book);
 
     @Mapping(source = "page", target = "syncedPage")
+    @Mapping(target = "fileUrl", expression = "java(\"/api/v1/books/assets/\" + asset.getId())")
     RetrieveBookResponseDTO.AssetDTO assetToDto(BookAsset asset);
 
-    // Add this: MapStruct will automatically generate the loop for you
     List<RetrieveBookResponseDTO> domainListToDtoList(List<Book> books);
 }

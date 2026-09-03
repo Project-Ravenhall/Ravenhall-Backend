@@ -9,6 +9,7 @@ import dev.ravenhall.book.application.ports.out.metadata.FetchBookMetadataPort;
 import dev.ravenhall.book.domain.Book;
 import dev.ravenhall.book.domain.enums.MetadataStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ManageMetadataService implements ManageMetadataUseCase {
 
@@ -33,6 +35,8 @@ public class ManageMetadataService implements ManageMetadataUseCase {
         if (bookList == null || bookList.isEmpty()) {
             return;
         }
+
+        log.info("Starting background metadata sweep for {} books with PENDING or FAILED status", bookList.size());
 
         // links each book to the exact request made for it
         Map<Book, ApiMetadataSearchRequest> bookToRequest = new HashMap<>();

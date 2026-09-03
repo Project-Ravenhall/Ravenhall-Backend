@@ -265,7 +265,7 @@ public class BookPersistenceAdapter implements ManageBookPort {
                 .orElseGet(() -> {
                     // The Optional was empty (silent drop). 
                     // This means the frontend sent a stale version ticket, or the data might be wrong.
-                    log.warn("Optimistic locking prevented progress update for user {} on asset {}. Expected version: {}. The incoming data/version might be wrong. Fetching true DB state...", 
+                    log.info("Optimistic locking prevented progress update for user {} on asset {}. Expected version: {}. The incoming data/version might be wrong. Fetching true DB state...",
                         progress.getUserId(), progress.getAssetId(), progress.getVersion());
                         
                     return bookProgressRepository.findById(new BookProgressId(progress.getUserId(), progress.getAssetId()))

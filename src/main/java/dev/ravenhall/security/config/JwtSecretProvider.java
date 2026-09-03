@@ -16,7 +16,7 @@ import java.util.Base64;
 @Component
 public class JwtSecretProvider {
 
-    @Value("${jwt.secret.storage.path:app/data/jwt.secret}")
+    @Value("${jwt.secret.storage.path:/data/secrets/jwt.secret}")
     private String secretPath;
 
     @Getter

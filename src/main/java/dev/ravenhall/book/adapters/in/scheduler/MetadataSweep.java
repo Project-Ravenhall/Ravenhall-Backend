@@ -17,7 +17,6 @@ public class MetadataSweep {
     public void sweep() {
         try {
             manageMetadataUseCase.enrichMetadata();
-            log.info("Book Metadata Sweep Started");
         }
         catch (Exception ex) {
             log.error("Book Metadata Sweep Error: ", ex);

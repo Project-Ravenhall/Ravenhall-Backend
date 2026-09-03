@@ -30,8 +30,6 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-
-
     // Catch all of them
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGenericException(Exception ex) {

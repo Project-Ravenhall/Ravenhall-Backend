@@ -31,14 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
-metadata
+data/media/metadata
 
 
 src/main/resources/application.properties
-
-Books
 .env
 *.md
 !README.md
 diagrams
-app
+*.properties
+data

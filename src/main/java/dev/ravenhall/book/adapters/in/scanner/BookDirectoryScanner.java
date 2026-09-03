@@ -33,7 +33,8 @@ public class BookDirectoryScanner {
         scan();
         log.info("Initial library scan complete.");
     }
-    @Scheduled(fixedDelay = 900000)
+
+    @Scheduled(initialDelay = 900000, fixedDelay = 900000)
     public void runScheduledScan() {
         scan();
     }

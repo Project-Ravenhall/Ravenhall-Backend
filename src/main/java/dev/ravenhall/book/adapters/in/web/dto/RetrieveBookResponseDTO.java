@@ -11,7 +11,7 @@ public record RetrieveBookResponseDTO(
         String apiTitle,
         List<String> apiAuthors,
         String synopsis,
-        String coverPath,
+        String coverUrl,
         OffsetDateTime addedAt,
         Integer apiReleaseYear,
         List<String> apiGenres,
@@ -20,7 +20,7 @@ public record RetrieveBookResponseDTO(
     public record AssetDTO(
             UUID id,
             String fileFormat,
-            String filepath,
+            String fileUrl,
             int pageCount,
             String checksum,
             long fileSize,
