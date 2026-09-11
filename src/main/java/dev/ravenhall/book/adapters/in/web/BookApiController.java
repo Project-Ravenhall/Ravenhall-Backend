@@ -1,5 +1,6 @@
 package dev.ravenhall.book.adapters.in.web;
 
+import dev.ravenhall.book.adapters.in.scheduler.MetadataSweep;
 import dev.ravenhall.book.adapters.in.web.dto.ProgressDTO;
 import dev.ravenhall.book.adapters.in.web.dto.RetrieveBookResponseDTO;
 import dev.ravenhall.book.adapters.in.web.mapper.BookRetrievalMapper;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +37,7 @@ public class BookApiController {
     private final ManageBookUseCase manageBookUseCase;
     private final BookRetrievalMapper bookRetrievalMapper;
     private final ProgressMapper progressMapper;
+    private final MetadataSweep sweep;
 
 
     @GetMapping("/{bookId}")
@@ -121,5 +124,18 @@ public class BookApiController {
 
         Progress progress = manageBookUseCase.getProgressForAsset(principal.userId(), assetId);
         return ResponseEntity.ok(progressMapper.domainToDto(progress));
+    }
+
+    @GetMapping("/metadata/update")
+    @NullMarked
+    public ResponseEntity<String> updateMetadata()
+    {
+        try {
+            sweep.manualSweep();
+            return ResponseEntity.ok().build();
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 }

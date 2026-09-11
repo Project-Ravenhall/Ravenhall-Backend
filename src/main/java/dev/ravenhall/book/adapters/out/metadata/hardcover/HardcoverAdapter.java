@@ -15,7 +15,6 @@ import org.springframework.web.client.RestClient;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.LockSupport;
 
 @Slf4j
 @Component
@@ -79,7 +78,6 @@ public class HardcoverAdapter implements FetchBookMetadataPort {
             } catch (Exception e) {
                 log.error("Failed to fetch metadata from Hardcover for request: {}. Reason: {}", request, e.getMessage(), e);
             }
-            LockSupport.parkNanos(1_100_000_000L); // ~1.1s pause, no checked exception
         }
 
         return results;

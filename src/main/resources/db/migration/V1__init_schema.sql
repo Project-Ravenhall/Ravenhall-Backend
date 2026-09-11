@@ -19,6 +19,7 @@ CREATE TABLE book_assets
     id                UUID          NOT NULL,
     book_id           UUID          NOT NULL,
     asset_type        VARCHAR(20),
+    asset_name        VARCHAR(255),
     file_format       VARCHAR(20)   NOT NULL,
     file_path         VARCHAR(1000) NOT NULL,
     file_size_bytes   BIGINT,

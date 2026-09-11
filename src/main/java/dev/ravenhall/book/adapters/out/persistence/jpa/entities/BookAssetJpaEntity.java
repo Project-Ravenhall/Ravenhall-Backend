@@ -22,6 +22,9 @@ public class BookAssetJpaEntity {
     @JoinColumn(name = "book_id", nullable = false)
     private BookJpaEntity book;
 
+    @Column(name = "asset_name")
+    private String assetName;
+
     @Column(name = "asset_type", length = 20)
     private String assetType;
 
