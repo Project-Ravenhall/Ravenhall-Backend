@@ -20,6 +20,7 @@ public record RetrieveBookResponseDTO(
     public record AssetDTO(
             UUID id,
             String fileFormat,
+            String assetName,
             String fileUrl,
             int pageCount,
             String checksum,

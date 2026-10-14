@@ -43,7 +43,7 @@ public class BookPersistenceAdapter implements ManageBookPort {
             VALUES (:id, :localTitle, cast(:localAuthors as text[]), :seriesId, :addedAt, :metadataStatus, :apiTitle, cast(:apiAuthors as text[]), :apiReleaseYear, cast(:apiGenres as text[]), :synopsis, :coverPath)
             ON CONFLICT (lower(local_title), lower((local_authors)[1]), series_id)
             DO UPDATE SET local_title = EXCLUDED.local_title
-            RETURNING id
+            RETURNING id, (xmax = 0) AS inserted
         """;
 
         Query query = entityManager.createNativeQuery(upsertSql)
@@ -60,22 +60,39 @@ public class BookPersistenceAdapter implements ManageBookPort {
                 .setParameter("synopsis", book.getSynopsis())
                 .setParameter("coverPath", book.getCoverPath());
 
-        UUID resolvedBookId = (UUID) query.getSingleResult(); // it returns an object so we cast to UUID
+        Object[] result = (Object[]) query.getSingleResult();
+        UUID resolvedBookId = (UUID) result[0];
+        boolean wasInserted = (Boolean) result[1];
+
+        if (wasInserted) {
+            log.info("Added Book: {}", book.getLocalTitle());
+        }
 
         for (BookAsset asset : book.getAssets()) {
-            entityManager.createNativeQuery("""
-        INSERT INTO book_assets (id, book_id, file_format, file_path, file_checksum, page_count, ingested_at, file_size_bytes)
-        VALUES (:id, :bookId, :fileFormat, :filePath, :fileChecksum, :pageCount, now(), :fileSize)
-        ON CONFLICT (book_id, file_checksum) DO NOTHING
-        """)
+            Query assetQuery = entityManager.createNativeQuery("""
+            INSERT INTO book_assets (id, book_id, asset_name, file_format, file_path, file_checksum, page_count, ingested_at, file_size_bytes)
+            VALUES (:id, :bookId, :assetName, :fileFormat, :filePath, :fileChecksum, :pageCount, now(), :fileSize)
+            ON CONFLICT (book_id, file_checksum) DO NOTHING
+            RETURNING (xmax = 0) AS inserted
+            """)
                     .setParameter("id", asset.getId())
                     .setParameter("bookId", resolvedBookId)
+                    .setParameter("assetName", asset.getAssetName())
                     .setParameter("fileFormat", String.valueOf(asset.getFileFormat()))
                     .setParameter("filePath", asset.getFilepath())
                     .setParameter("fileChecksum", asset.getChecksum())
                     .setParameter("pageCount", asset.getPageCount())
-                    .setParameter("fileSize", asset.getFileSize())
-                    .executeUpdate();
+                    .setParameter("fileSize", asset.getFileSize());
+
+            /**
+             * I avoided using {@code assetQuery.getSingleResult();} because it throws
+             * {@code NoResultException}; blank is better.
+             */
+            List<?> assetResult = assetQuery.getResultList();
+
+            if (!assetResult.isEmpty()) {
+                log.info("Uploaded Asset: {}", asset.getAssetName());
+            }
         }
     }
 
@@ -127,6 +144,7 @@ public class BookPersistenceAdapter implements ManageBookPort {
                     assetEntity.getId(),
                     FileFormat.valueOf(assetEntity.getFileFormat()),
                     assetEntity.getFilePath(),
+                    assetEntity.getAssetName(),
                     assetEntity.getPageCount() != null ? assetEntity.getPageCount() : 0,
                     assetEntity.getFileChecksum(),
                     assetEntity.getFileSize() != null ? assetEntity.getFileSize() : 1L
@@ -164,6 +182,7 @@ public class BookPersistenceAdapter implements ManageBookPort {
                         assetEntity.getId(),
                         FileFormat.valueOf(assetEntity.getFileFormat()),
                         assetEntity.getFilePath(),
+                        assetEntity.getAssetName(),
                         assetEntity.getPageCount() != null ? assetEntity.getPageCount() : 0,
                         assetEntity.getFileChecksum(),
                         assetEntity.getFileSize() != null ? assetEntity.getFileSize() : 1L
@@ -228,6 +247,7 @@ public class BookPersistenceAdapter implements ManageBookPort {
                 assetEntity.getId(),
                 FileFormat.valueOf(assetEntity.getFileFormat()),
                 assetEntity.getFilePath(),
+                assetEntity.getAssetName(),
                 assetEntity.getPageCount() != null ? assetEntity.getPageCount() : 0,
                 assetEntity.getFileChecksum(),
                 assetEntity.getFileSize() != null ? assetEntity.getFileSize() : 1L

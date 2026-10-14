@@ -19,7 +19,6 @@ import java.util.Optional;
 @Slf4j
 public class PdfExtractor {
 
-
     public Optional<LocalMetadataExtract> extract(File pdfFile) {
         try (PDDocument pdf = Loader.loadPDF(pdfFile)) {
 

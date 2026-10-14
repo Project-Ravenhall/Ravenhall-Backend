@@ -19,7 +19,7 @@ public class MetadataSweep {
     private final AtomicLong lastRun = new AtomicLong(0);
     private final long COUNTDOWN = 5 * 60 * 1000;
 
-    @Scheduled(fixedRate = COUNTDOWN)
+    @Scheduled(initialDelay = 60_000, fixedRate = COUNTDOWN)
     public void autoSweep() {
         boolean acquired = running.compareAndSet(false, true);
         if (!acquired) {
@@ -35,9 +35,9 @@ public class MetadataSweep {
         }
 
         try {
+            log.info("Book Metadata Automatic Sweep Started");
             manageMetadataUseCase.enrichMetadata();
             lastRun.set(System.currentTimeMillis());
-            log.info("Automatic Metadata Sweep started");
         } catch (Exception ex) {
             log.error("Book Metadata Automatic Sweep Error: ", ex);
         } finally {
@@ -52,9 +52,9 @@ public class MetadataSweep {
         }
 
         try {
+            log.info("Book Metadata Manual Sweep Started");
             manageMetadataUseCase.enrichMetadata();
             lastRun.set(System.currentTimeMillis());
-            log.info("Book Metadata Manual Sweep Started");
         } catch (Exception ex) {
             log.error("Book Metadata Manual Sweep Error: ", ex);
         } finally {

@@ -39,6 +39,7 @@ public class ManageBookService implements ManageBookUseCase {
                 UUID.randomUUID(),
                 bookCommand.fileFormat(),
                 bookCommand.filePath(),
+                bookCommand.assetName(),
                 bookCommand.pageCount(),
                 bookCommand.fileChecksum(),
                 bookCommand.fileSize()

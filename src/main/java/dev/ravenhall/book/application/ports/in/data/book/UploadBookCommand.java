@@ -12,6 +12,7 @@ public record UploadBookCommand(
         String series,
         FileFormat fileFormat,
         String filePath,
+        String assetName,
         String fileChecksum,
         int pageCount,
         long fileSize

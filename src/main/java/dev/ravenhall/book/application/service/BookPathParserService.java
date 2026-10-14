@@ -18,7 +18,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class BookPathParserUseCase implements ManageBookPathsUseCase {
+public class BookPathParserService implements ManageBookPathsUseCase {
 
     private final PdfExtractor pdfExtractor;
     private final ManageBookUseCase manageBookUseCase;
@@ -53,12 +53,14 @@ public class BookPathParserUseCase implements ManageBookPathsUseCase {
             case 3 -> builder // Author/Book/book.pdf  0/1/2
                 .localTitle(getTitle(relativePath, 1))
                 .localAuthors(getAuthors(relativePath, 0))
+                .assetName(getAssetName(relativePath, 2))
                 .build();
 
             case 4 -> builder // Author/Series/Book/book.pdf  0/1/2/3
                 .localTitle(getTitle(relativePath, 2))
                 .series(getSeries(relativePath, 1))
                 .localAuthors(getAuthors(relativePath, 0))
+                .assetName(getAssetName(relativePath, 3))
                 .build();
 
             default -> {
@@ -68,9 +70,13 @@ public class BookPathParserUseCase implements ManageBookPathsUseCase {
         };
 
         if (command != null) {
-            log.info("Uploaded book: {}", command.localTitle());
             manageBookUseCase.ingestBook(command);
         }
+    }
+
+    private String getAssetName(Path bookPath, int index) {
+        String fileName = bookPath.getName(index).toString();
+        return fileName.replaceAll("(?i)\\.(pdf|epub)$", "");
     }
 
     private List<String> getAuthors(Path bookPath, int index) {
